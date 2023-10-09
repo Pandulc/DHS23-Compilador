@@ -47,6 +47,7 @@ instruccion:
 	declaracion PYC
 	| retornar PYC
 	| asignacion PYC
+	| call_funcion PYC
 	| if_stmt
 	| while_stmt
 	| for_stmt
@@ -56,15 +57,15 @@ tdato: INT | DOUBLE;
 
 operador: EQQ | NE | GT | LT | GE | LE;
 
-declaracion: tdato ID definicion lista_var;
+declaracion: tdato ID (definicion |) lista_var;
 
-definicion: EQ NUMERO;
+definicion: EQ (oplo | call_funcion);
 
 bloque: LLA instrucciones LLC;
 
-lista_var: COMA ID definicion lista_var |;
+lista_var: COMA ID (definicion |) lista_var |;
 
-asignacion: ID EQ (opar | oplo);
+asignacion: ID (EQ ((opar | oplo) | call_funcion) | PP | MM);
 
 retornar: (RETURN ID) | (RETURN NUMERO);
 
@@ -73,12 +74,7 @@ while_stmt: WHILE PA oplo PC instruccion;
 if_stmt: IF PA oplo PC instruccion;
 
 for_stmt:
-	(
-		FOR PA (asignacion) PYC oplo PYC (
-			ID (PP | MM)
-			| asignacion
-		) PC instruccion
-	);
+	(FOR PA (asignacion) PYC oplo PYC asignacion PC instruccion);
 
 oplo: logic_expresion;
 
@@ -109,4 +105,12 @@ factor: ((MENOS |) NUMERO)
 	| funcion
 	| PA expresion PC;
 
-funcion: tdato ID PA ID PC;
+proto_funcion: tdato ID PA args PC;
+
+funcion: tdato ID PA args PC bloque;
+
+call_funcion: ID PA opar PC;
+
+args: tdato ID lista_args;
+
+lista_args: | COMA tdato ID lista_args;
