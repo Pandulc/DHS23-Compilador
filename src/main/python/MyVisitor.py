@@ -21,79 +21,163 @@ class MyVisitor(compiladoresVisitor):
         self.visitDefinicion(ctx.getChild(2))
 
         self.f.write(ctx.getChild(1).getText() +
-                     " = " + self._temporales.pop())
+                     " = " + self._temporales.pop() + '\n')
 
       # Visit a parse tree produced by compiladoresParser#definicion.
     def visitDefinicion(self, ctx: compiladoresParser.DefinicionContext):
-        self.visitOpar(ctx.getChild(1))
+        self.visitOplo(ctx.getChild(1))
         return
 
     def visitAsignacion(self, ctx: compiladoresParser.AsignacionContext):
-        self.visitOpar(ctx.getChild(2))
+        self.visitOplo(ctx.getChild(2))
 
         self.f.write(ctx.getChild(0).getText() +
-                     " = " + self._temporales.pop())
+                     " = " + self._temporales.pop() + '\n')
+
+    def visitOplo(self, ctx: compiladoresParser.OploContext):
+        return self.visitLogic_expresion(ctx.getChild(0))
+
+    def visitLogic_expresion(self, ctx: compiladoresParser.Logic_expresionContext):
+
+        self.visitLogic_termino(ctx.getChild(0))
+
+        if ctx.getChild(1).getChildCount() != 0:
+            temporal = self.generador_temporales.next_temporal()
+            self.f.write(temporal + ' = ' + self._temporales.pop() + ' ' + ctx.getChild(
+                1).getChild(0).getText() + ' ' + self.visitLogic_expr(ctx.getChild(1)) + '\n')
+            self._temporales.append(temporal)
+
+        return
+
+    def visitLogic_expr(self, ctx: compiladoresParser.Logic_exprContext):
+        self.visitLogic_termino(ctx.getChild(1))
+
+        if ctx.getChild(2).getChildCount() != 0:
+            temporal = self.generador_temporales.next_temporal()
+
+            self.f.write(temporal + ' = ' + self._temporales.pop() + ' ' + ctx.getChild(
+                2).getChild(0).getText() + ' ' + self.visitLogic_expr(ctx.getChild(2)) + '\n')
+
+            self._temporales.append(temporal)
+
+        return self._temporales.pop()
+
+    def visitLogic_termino(self, ctx: compiladoresParser.Logic_terminoContext):
+        self.visitLogic_factor(ctx.getChild(0))
+
+        if ctx.getChild(1).getChildCount() != 0:
+
+            temporal = self.generador_temporales.next_temporal()
+            self.f.write(temporal + ' = ' + self._temporales.pop() + ' ' + ctx.getChild(
+                1).getChild(0).getText() + ' ' + self.visitLogic_term(ctx.getChild(1)) + '\n')
+            self._temporales.append(temporal)
+
+        return
+
+    def visitLogic_term(self, ctx: compiladoresParser.Logic_termContext):
+
+        self.visitLogic_factor(ctx.getChild(1))
+
+        if ctx.getChild(2).getChildCount() != 0:
+            temporal = self.generador_temporales.next_temporal()
+
+            self.f.write(temporal + ' = ' + self._temporales.pop() + ' ' + ctx.getChild(
+                2).getChild(0).getText() + ' ' + self.visitLogic_term(ctx.getChild(2)) + '\n')
+
+            self._temporales.append(temporal)
+
+        return self._temporales.pop()
+
+    def visitLogic_factor(self, ctx: compiladoresParser.Logic_factorContext):
+        if ctx.getChildCount() == 1:
+            if ctx.getChild(0).getChildCount() == 1:
+                self.visitOpar(ctx.getChild(0))
+                return
+            if ctx.getChild(0).getChildCount() == 3:
+                self.visitComp(ctx.getChild(0))
+                return
+        else:
+            self.visitLogic_expresion(ctx.getChild(1))
+
+    def visitComp(self, ctx: compiladoresParser.CompContext):
+        self.visitOpar(ctx.getChild(2))
+        self.visitOpar(ctx.getChild(0))
+
+        temporal = self.generador_temporales.next_temporal()
+
+        self.f.write(temporal + " = " + self._temporales.pop() + " " +
+                     ctx.getChild(1).getText() + " " + self._temporales.pop() + '\n')
+
+        self._temporales.append(temporal)
 
     def visitOpar(self, ctx: compiladoresParser.OparContext):
         self.visitExpresion(ctx.getChild(0))
         return
 
     def visitExpresion(self, ctx: compiladoresParser.ExpresionContext):
-        temporal = self.generador_temporales.next_temporal()
-        self._temporales.append(temporal)
-        self.f.write(temporal + " = " + self.visitTermino(ctx.getChild(0)) + " " +
-                     ctx.getChild(1).getChild(0).getText() + " " + self.visitExp(ctx.getChild(1)) + "\n")
+        self.visitTermino(ctx.getChild(0))
+
+        if ctx.getChild(1).getChildCount() != 0:
+            temporal = self.generador_temporales.next_temporal()
+
+            self.f.write(temporal + " = " + self._temporales.pop() + " " +
+                         ctx.getChild(1).getChild(0).getText() + " " + self.visitExp(ctx.getChild(1)) + "\n")
+            self._temporales.append(temporal)
 
         return
 
     def visitExp(self, ctx: compiladoresParser.ExpContext):
-        if ctx.getChild(2).getChildCount() == 0:
-            return self.visitTermino(ctx.getChild(1))
+        self.visitTermino(ctx.getChild(1))
 
-        temporal = self.generador_temporales.next_temporal()
-        self._temporales.append(temporal)
-        self.f.write(temporal + " = " + self.visitTermino(ctx.getChild(1)) + " " +
-                     ctx.getChild(2).getChild(0).getText() + " " + self.visitExp(ctx.getChild(2)) + "\n")
+        if ctx.getChild(2).getChildCount() != 0:
+            temporal = self.generador_temporales.next_temporal()
+
+            self.f.write(temporal + " = " + self._temporales.pop() + " " +
+                         ctx.getChild(2).getChild(0).getText() + " " + self.visitExp(ctx.getChild(2)) + "\n")
+            self._temporales.append(temporal)
 
         return self._temporales.pop()
 
     def visitTermino(self, ctx: compiladoresParser.TerminoContext):
-        temporal = self.generador_temporales.next_temporal()
-        self._temporales.append(temporal)
+        self.visitFactor(ctx.getChild(0))
 
-        if ctx.getChild(0).getChildCount() == 3:
-            self.visitExpresion(ctx.getChild(0).getChild(1))
-            self.f.write(temporal + " = " + self._temporales.pop() + "\n")
+        if ctx.getChild(1).getChildCount() != 0:
+            temporal = self.generador_temporales.next_temporal()
 
-        if ctx.getChild(0).getChildCount() == 2:
-            self.f.write(temporal + " = " + ctx.getChild(0).getChild(
-                0).getText() + ctx.getChild(0).getChild(1).getText() + "\n")
+            self.f.write(temporal + ' = ' + self._temporales.pop() + ' ' + ctx.getChild(
+                1).getChild(0).getText() + ' ' + self.visitTerm(ctx.getChild(1)) + '\n')
+            self._temporales.append(temporal)
 
-        if ctx.getChild(0).getChildCount() == 1:
-            self.f.write(temporal + " = " +
-                         ctx.getChild(0).getChild(0).getText() + "\n")
-
-        return self.visitTerm(ctx.getChild(1))
+        return
 
     def visitTerm(self, ctx: compiladoresParser.TermContext):
-        if ctx.getChildCount() == 0:
-            return self._temporales.pop()
+        self.visitFactor(ctx.getChild(1))
 
-        temporal = self.generador_temporales.next_temporal()
+        if ctx.getChild(2).getChildCount() != 0:
+            temporal = self.generador_temporales.next_temporal()
 
-        self.f.write(temporal + " = " + self._temporales.pop() + " " + ctx.getChild(0).getText() + " " +
-                     self.visitFactor(ctx.getChild(1)) + "\n")
+            self.f.write(temporal + ' = ' + self._temporales.pop() + ' ' + ctx.getChild(
+                2).getChild(0).getText() + ' ' + self.visitTerm(ctx.getChild(2)) + '\n')
+            self._temporales.append(temporal)
 
-        self._temporales.append(temporal)
-        return self.visitTerm(ctx.getChild(2))
+        return self._temporales.pop()
 
     def visitFactor(self, ctx: compiladoresParser.FactorContext):
+
         if ctx.getChildCount() == 3:
             self.visitExpresion(ctx.getChild(1))
+            return
         if ctx.getChildCount() == 2:
-            return ctx.getChild(0).getText() + ctx.getChild(1).getText()
-        else:
-            return ctx.getChild(0).getText()
+            temporal = self.generador_temporales.next_temporal()
+            self.f.write(temporal + ' = ' +
+                         ctx.getChild(0).getText() + ctx.getChild(1).getText() + '\n')
+            self._temporales.append(temporal)
+            return
+        if ctx.getChildCount() == 1:
+            temporal = self.generador_temporales.next_temporal()
+            self.f.write(temporal + ' = ' + ctx.getChild(0).getText() + '\n')
+            self._temporales.append(temporal)
+            return
 
 
 if __name__ == "__main__":

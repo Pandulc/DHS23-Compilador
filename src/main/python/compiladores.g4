@@ -60,13 +60,13 @@ operador: EQQ | NE | GT | LT | GE | LE;
 
 declaracion: tdato ID definicion lista_var;
 
-definicion: EQ opar | EQ oplo |;
+definicion: EQ oplo |;
 
 bloque: LLA instrucciones LLC;
 
 lista_var: COMA ID (definicion |) lista_var |;
 
-asignacion: ID (EQ opar | EQ oplo | PP | MM);
+asignacion: ID (EQ oplo | PP | MM);
 
 retornar: RETURN oplo;
 
@@ -87,7 +87,7 @@ logic_termino: logic_factor logic_term;
 
 logic_term: AND logic_factor logic_term |;
 
-logic_factor: factor | opar | comp | (PA logic_expresion PC);
+logic_factor: opar | comp | (PA logic_expresion PC);
 
 comp: opar operador opar | comp operador comp;
 
