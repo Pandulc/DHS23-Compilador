@@ -10,8 +10,6 @@ LT: '<';
 GT: '>';
 LE: '<=';
 GE: '>=';
-PP: '++';
-MM: '--';
 MAS: '+';
 MENOS: '-';
 MUL: '*';
@@ -33,6 +31,7 @@ INT: 'int';
 DOUBLE: 'double';
 WHILE: 'while';
 IF: 'if';
+ELSE: 'else';
 FOR: 'for';
 RETURN: 'return';
 ID: (LETRA | '_') (LETRA | DIGITO | '_')*;
@@ -48,6 +47,7 @@ instruccion:
 	| retornar PYC
 	| asignacion PYC
 	| call_funcion PYC
+	| proto_funcion PYC
 	| funcion
 	| if_stmt
 	| while_stmt
@@ -66,16 +66,18 @@ bloque: LLA instrucciones LLC;
 
 lista_var: COMA ID (definicion |) lista_var |;
 
-asignacion: ID (EQ oplo | PP | MM);
+asignacion: ID EQ oplo;
 
 retornar: RETURN oplo;
 
-while_stmt: WHILE PA oplo PC instruccion;
+while_stmt: WHILE PA oplo PC instrucciones;
 
-if_stmt: IF PA oplo PC instruccion;
+if_stmt: IF PA oplo PC bloque ( | else_stmt);
+
+else_stmt: ELSE bloque;
 
 for_stmt:
-	(FOR PA (asignacion) PYC oplo PYC asignacion PC instruccion);
+	FOR PA asignacion PYC oplo PYC asignacion PC instrucciones;
 
 oplo: logic_expresion;
 
@@ -112,7 +114,7 @@ funcion: tdato ID PA args PC bloque;
 
 call_funcion: ID PA send_args PC;
 
-args: tdato ID lista_args;
+args: | tdato ID lista_args;
 
 lista_args: | COMA tdato ID lista_args;
 

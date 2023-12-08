@@ -1,20 +1,19 @@
-t0 = y
-t2 = 90
-t3 = b
+t0 = 4
+a = t0
+t1 = 0
+i = t1
+label l0
+t2 = 1000
+t3 = i
 t4 = t3 < t2
-t1 = t0 && t4
-t6 = 20
-t8 = 3
-t7 = t6 % t8
-t10 = z
-t12 = 925
-t11 = t10 * t12
-t9 = t7 + t11
-t13 = b
-t15 = 30
-t14 = t13 * t15
-t17 = x
-t16 = t14 + t17
-t18 = t16 > t9
-t5 = t1 || t18
-a = t5
+ifn t4 jmpl1
+t5 = a
+t7 = 2
+t6 = t5 / t7
+a = t6
+t8 = i
+t10 = 1
+t9 = t8 + t10
+i = t9
+jmp l0
+label l1

@@ -1,29 +1,32 @@
 from compiladoresVisitor import compiladoresVisitor
 from compiladoresParser import compiladoresParser
-from Util.ManejoArchivos import *
 from Util.Temporales import *
+from Util.Etiquetas import *
 
 
 class MyVisitor(compiladoresVisitor):
 
     _temporales = []
+    _etiquetas = []
     generador_temporales = Temporales()
+    generador_etiquetas = Etiquetas()
 
     def visitPrograma(self, ctx: compiladoresParser.ProgramaContext):
         print("Visitando arbol")
         self.f = open("./output/CodigoIntermedio.txt", "w")
 
         self.visitChildren(ctx)
+
         self.f.close()
 
     def visitDeclaracion(self, ctx: compiladoresParser.DeclaracionContext):
 
-        self.visitDefinicion(ctx.getChild(2))
+        if ctx.getChild(2).getChildCount() != 0:
+            self.visitDefinicion(ctx.getChild(2))
+            self.f.write(ctx.getChild(1).getText() +
+                         " = " + self._temporales.pop() + '\n')
+        return
 
-        self.f.write(ctx.getChild(1).getText() +
-                     " = " + self._temporales.pop() + '\n')
-
-      # Visit a parse tree produced by compiladoresParser#definicion.
     def visitDefinicion(self, ctx: compiladoresParser.DefinicionContext):
         self.visitOplo(ctx.getChild(1))
         return
@@ -33,6 +36,58 @@ class MyVisitor(compiladoresVisitor):
 
         self.f.write(ctx.getChild(0).getText() +
                      " = " + self._temporales.pop() + '\n')
+
+    def visitIf_stmt(self, ctx: compiladoresParser.If_stmtContext):
+        self.visitOplo(ctx.getChild(2))
+
+        if (ctx.getChild(5) == None):
+            etiqueta = self.generador_etiquetas.next_etiqueta()
+            self.f.write('ifn ' + self._temporales.pop() +
+                         ' jmp' + etiqueta + '\n')
+            self.visitBloque(ctx.getChild(4))
+            self.f.write('label ' + etiqueta + '\n')
+        else:
+            etiqueta1 = self.generador_etiquetas.next_etiqueta()
+            etiqueta2 = self.generador_etiquetas.next_etiqueta()
+            self.f.write('ifn ' + self._temporales.pop() +
+                         ' jmp ' + etiqueta1 + '\n')
+            self.visitBloque(ctx.getChild(4))
+            self.f.write('jmp ' + etiqueta2 + '\n')
+            self.f.write('label ' + etiqueta1 + '\n')
+            self.visitElse_stmt(ctx.getChild(5))
+            self.f.write('label ' + etiqueta2 + '\n')
+
+        return
+
+    def visitElse_stmt(self, ctx: compiladoresParser.If_stmtContext):
+        self.visitBloque(ctx.getChild(1))
+        return
+
+    def visitFor_stmt(self, ctx: compiladoresParser.For_stmtContext):
+        etiqueta1 = self.generador_etiquetas.next_etiqueta()
+        self.visitAsignacion(ctx.getChild(2))
+        self.f.write('label ' + etiqueta1 + '\n')
+
+        etiqueta2 = self.generador_etiquetas.next_etiqueta()
+        self.visitOplo(ctx.getChild(4))
+        self.f.write('ifn ' + self._temporales.pop() +
+                     ' jmp' + etiqueta2 + '\n')
+        self.visitInstrucciones(ctx.getChild(8))
+        self.visitAsignacion(ctx.getChild(6))
+        self.f.write('jmp ' + etiqueta1 + '\n')
+        self.f.write('label ' + etiqueta2 + '\n')
+
+    def visitWhile_stmt(self, ctx: compiladoresParser.While_stmtContext):
+        etiqueta1 = self.generador_etiquetas.next_etiqueta()
+        self.f.write('label ' + etiqueta1 + '\n')
+
+        etiqueta2 = self.generador_etiquetas.next_etiqueta()
+        self.visitOplo(ctx.getChild(2))
+        self.f.write('ifn ' + self._temporales.pop() +
+                     ' jmp' + etiqueta2 + '\n')
+        self.visitInstrucciones(ctx.getChild(4))
+        self.f.write('jmp ' + etiqueta1 + '\n')
+        self.f.write('label ' + etiqueta2 + '\n')
 
     def visitOplo(self, ctx: compiladoresParser.OploContext):
         return self.visitLogic_expresion(ctx.getChild(0))

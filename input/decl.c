@@ -1,1 +1,12 @@
-int a = (y && (b < 90)) || (b * 30 + x) > (20 % 3 + z * 925);
+int f(int a, int b);
+
+int main()
+{
+    int x = 10;
+    int y = f(x, 12350 * 22);
+}
+
+int f(int a, int b)
+{
+    return a * 2 + b % 5;
+}
