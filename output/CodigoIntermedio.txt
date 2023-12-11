@@ -1,19 +1,21 @@
-t0 = 4
-a = t0
-t1 = 0
-i = t1
-label l0
-t2 = 1000
-t3 = i
-t4 = t3 < t2
-ifn t4 jmpl1
-t5 = a
-t7 = 2
-t6 = t5 / t7
-a = t6
-t8 = i
-t10 = 1
-t9 = t8 + t10
-i = t9
+t0 = 2
+numero1 = t0
+t1 = 5
+numero2 = t1
+t2 = numero1
+push t2
+t3 = numero2
+push t3
+push l1
 jmp l0
 label l1
+pop resultado
+label l0
+pop num1
+pop num2
+pop l1
+t4 = num1
+t6 = num2
+t5 = t4 + t6
+push t5
+jmp l1

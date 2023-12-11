@@ -44,10 +44,10 @@ instrucciones: instruccion instrucciones |;
 
 instruccion:
 	declaracion PYC
-	| retornar PYC
 	| asignacion PYC
 	| call_funcion PYC
 	| proto_funcion PYC
+	| retornar PYC
 	| funcion
 	| if_stmt
 	| while_stmt
@@ -64,7 +64,7 @@ definicion: EQ oplo |;
 
 bloque: LLA instrucciones LLC;
 
-lista_var: COMA ID (definicion |) lista_var |;
+lista_var: COMA ID definicion lista_var |;
 
 asignacion: ID EQ oplo;
 

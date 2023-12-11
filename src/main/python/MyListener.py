@@ -25,12 +25,12 @@ class MyListener(compiladoresListener):
         if (self.tablaSimbolos.buscarLocal(ctx.getChild(1).getText()) == False):
             tdato = str(ctx.getChild(0).getText())
             name = str(ctx.getChild(1).getText())
-            inicializado = Id(name, tdato)
+            nuevaVar = Id(name, tdato)
             # Si el 3er hijo en la declaracion es distinto de vacio, existe definicion
             if (str(ctx.getChild(2).getText()) != ''):
-                inicializado.setInicializado()
+                nuevaVar.setInicializado()
         else:
             print("Variable " + ctx.getChild(1).getText() +
                   " existente en el contexto")
             return
-        self.tablaSimbolos.agregar(inicializado)
+        self.tablaSimbolos.agregar(nuevaVar)

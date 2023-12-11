@@ -1,12 +1,15 @@
-int f(int a, int b);
+int sumar(int num1, int num2);
 
 int main()
 {
-    int x = 10;
-    int y = f(x, 12350 * 22);
+    int numero1, numero2 = 5;
+
+    int resultado = sumar(numero1, numero2);
+
+    return 0;
 }
 
-int f(int a, int b)
+int sumar(int num1, int num2)
 {
-    return a * 2 + b % 5;
+    return num1 + num2;
 }
