@@ -4,6 +4,7 @@ from compiladoresLexer import compiladoresLexer
 from compiladoresParser import compiladoresParser
 from MyListener import MyListener
 from MyVisitor import MyVisitor
+from Optimizacion import Optimizador
 
 
 def main(argv):
@@ -19,6 +20,8 @@ def main(argv):
     tree = parser.programa()
     visitor = MyVisitor()
     visitor.visit(tree)
+    optimizador = Optimizador()
+    optimizador.optimizarCodigoIntermedio()
 
 
 if __name__ == '__main__':

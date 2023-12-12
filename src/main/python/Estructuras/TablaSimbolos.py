@@ -1,4 +1,4 @@
-from Contexto import Contexto
+from Estructuras.Contexto import Contexto
 
 
 class TS:
@@ -36,7 +36,7 @@ class TS:
 
     def buscarLocal(self, nombre):
         if nombre in TS._ctx[-1].getSimbolos():
-            return True
+            return TS._ctx[-1]
         return False
 
     # Buscamos la key en cualquiera de los contextos almacenados

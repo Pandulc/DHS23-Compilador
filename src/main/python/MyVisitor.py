@@ -40,6 +40,8 @@ class MyVisitor(compiladoresVisitor):
         if self.inFuncion == 1:
             if ctx.getChild(2).getChildCount() != 0:
                 self.visitDefinicion(ctx.getChild(2))
+                self.f.write(ctx.getChild(1).getText() +
+                             " = " + self._temporales.pop() + '\n')
                 return
 
         # verificacion de llamado a funcion
@@ -77,6 +79,8 @@ class MyVisitor(compiladoresVisitor):
     def visitAsignacion(self, ctx: compiladoresParser.AsignacionContext):
         if self.inFuncion == 1:
             self.visitOplo(ctx.getChild(2))
+            self.f.write(ctx.getChild(0).getText() +
+                         " = " + self._temporales.pop() + '\n')
             return
 
         # verificacion de llamado a funcion

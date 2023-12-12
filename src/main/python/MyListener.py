@@ -1,7 +1,7 @@
 from compiladoresListener import compiladoresListener
 from compiladoresParser import compiladoresParser
-from TablaSimbolos import TS
-from Id import *
+from Estructuras.TablaSimbolos import TS
+from Estructuras.Id import *
 import copy
 
 
@@ -20,6 +20,19 @@ class MyListener(compiladoresListener):
 
     def enterBloque(self, ctx: compiladoresParser.BloqueContext):
         self.tablaSimbolos.agregarContexto()
+
+        # Verificacion de padre, que no sea if, for o while
+        if ctx.parentCtx.getChild(0).getText() != 'int':
+            if ctx.parentCtx.getChild(0).getText() != 'double':
+                return
+
+        # Proceso la lista de parametros de la funcion
+        self.exitArgs(ctx.parentCtx.getChild(3))
+        listaArgs = copy.deepcopy(self.listArgs)
+
+        # Los guardo dentro de la tabla de simbolos, en el contexto de la funcion
+        for var in listaArgs:
+            self.tablaSimbolos.agregar(var)
 
     def exitBloque(self, ctx: compiladoresParser.BloqueContext):
         self.tablaSimbolos.borrarContexto()
