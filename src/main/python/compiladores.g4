@@ -54,21 +54,19 @@ instruccion:
 	| proto_funcion PYC
 	| bloque;
 
+bloque: LLA instrucciones LLC;
+
 tdato: INT | DOUBLE;
 
 operador: EQQ | NE | GT | LT | GE | LE;
 
 declaracion: tdato ID definicion lista_var;
 
-definicion: EQ oplo |;
-
-bloque: LLA instrucciones LLC;
-
 lista_var: COMA ID definicion lista_var |;
 
-asignacion: ID EQ oplo;
+definicion: EQ oplo |;
 
-retornar: RETURN oplo;
+asignacion: ID EQ oplo;
 
 while_stmt: WHILE PA oplo PC instrucciones;
 
@@ -111,6 +109,8 @@ factor: ((MENOS |) NUMERO)
 proto_funcion: tdato ID PA args PC;
 
 funcion: tdato ID PA args PC bloque;
+
+retornar: RETURN oplo;
 
 call_funcion: ID PA send_args PC;
 

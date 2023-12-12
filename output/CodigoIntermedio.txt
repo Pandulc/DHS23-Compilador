@@ -9,12 +9,10 @@ push t1
 jmp l1
 t3 = 5
 entero = t3
-t4 = 3.14
-decimal = t4
-t5 = entero
+t4 = entero
+push t4
+t5 = 3.14
 push t5
-t6 = decimal
-push t6
 push l1
 jmp l0
 label l1
