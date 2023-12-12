@@ -1,15 +1,15 @@
-int sumar(int num1, int num2);
+double sumarElementos(int a, double b)
+{
+    return a + b;
+}
 
 int main()
 {
-    int numero1, numero2 = 5;
 
-    int resultado = sumar(numero1, numero2);
+    int entero = 5;
+    double decimal = 3.14;
+
+    double resultado = sumarElementos(entero, decimal);
 
     return 0;
-}
-
-int sumar(int num1, int num2)
-{
-    return num1 + num2;
 }

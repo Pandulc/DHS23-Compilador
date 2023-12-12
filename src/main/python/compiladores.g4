@@ -25,7 +25,7 @@ LLC: '}';
 PYC: ';';
 COMA: ',';
 
-NUMERO: DIGITO+;
+NUMERO: DIGITO+ | DIGITO+ '.' DIGITO+;
 
 INT: 'int';
 DOUBLE: 'double';
@@ -45,13 +45,13 @@ instrucciones: instruccion instrucciones |;
 instruccion:
 	declaracion PYC
 	| asignacion PYC
+	| retornar PYC
+	| if_stmt
+	| for_stmt
+	| while_stmt
+	| funcion
 	| call_funcion PYC
 	| proto_funcion PYC
-	| retornar PYC
-	| funcion
-	| if_stmt
-	| while_stmt
-	| for_stmt
 	| bloque;
 
 tdato: INT | DOUBLE;
@@ -114,9 +114,11 @@ funcion: tdato ID PA args PC bloque;
 
 call_funcion: ID PA send_args PC;
 
-args: | tdato ID lista_args;
+args: | tdato arg lista_args;
 
-lista_args: | COMA tdato ID lista_args;
+lista_args: | COMA tdato arg lista_args;
+
+arg: ID |;
 
 send_args: expresion lista_send_args;
 

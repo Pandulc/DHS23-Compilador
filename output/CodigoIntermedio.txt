@@ -1,21 +1,21 @@
-t0 = 2
-numero1 = t0
-t1 = 5
-numero2 = t1
-t2 = numero1
-push t2
-t3 = numero2
-push t3
+label l0
+pop a
+pop b
+pop l1
+t0 = a
+t2 = b
+t1 = t0 + t2
+push t1
+jmp l1
+t3 = 5
+entero = t3
+t4 = 3.14
+decimal = t4
+t5 = entero
+push t5
+t6 = decimal
+push t6
 push l1
 jmp l0
 label l1
 pop resultado
-label l0
-pop num1
-pop num2
-pop l1
-t4 = num1
-t6 = num2
-t5 = t4 + t6
-push t5
-jmp l1

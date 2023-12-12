@@ -28,17 +28,21 @@ class TS:
     def agregar(self, variable):
         TS._ctx[-1].agregarSimbolo(variable)
 
+    def actualizar(self, variable):
+        TS.buscar(TS, variable.nombre).agregarSimbolo(variable)
+
     # Para el ultimo contexto guardado, buscamos por la key, el nombre del ID
     # Si esta en el diccionario, return true, else false
+
     def buscarLocal(self, nombre):
-        if nombre in TS._ctx[-1].getSimbolos:
+        if nombre in TS._ctx[-1].getSimbolos():
             return True
         return False
 
     # Buscamos la key en cualquiera de los contextos almacenados
     # Recorremos desde el global hacia el ultimo
-    def buscar(self, nombre):
+    def buscar(self, nombre) -> Contexto:
         for context in TS._ctx[::-1]:
             if nombre in context.getSimbolos():
-                return True
+                return context
         return False

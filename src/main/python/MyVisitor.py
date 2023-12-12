@@ -20,6 +20,7 @@ class MyVisitor(compiladoresVisitor):
         self.visitInstrucciones(ctx.getChild(0))
 
         self.f.close()
+        print("Codigo intermedio generado")
 
     def visitInstrucciones(self, ctx: compiladoresParser.InstruccionContext):
         self.visitInstruccion(ctx.getChild(0))
@@ -42,15 +43,16 @@ class MyVisitor(compiladoresVisitor):
                 return
 
         # verificacion de llamado a funcion
-        if ctx.getChild(2).getChild(1).getChild(0).getChild(0).getChild(0).getChild(0).getChild(0).getChild(0).getChild(0).getChild(0).getChildCount() != 0:
-            self.isFuncion = 1
-            self.visitDefinicion(ctx.getChild(2))
-            self.f.write('pop ' + ctx.getChild(1).getText() + '\n')
+        if ctx.getChild(2).getChildCount() != 0:
+            if ctx.getChild(2).getChild(1).getChild(0).getChild(0).getChild(0).getChild(0).getChild(0).getChild(0).getChild(0).getChild(0).getChildCount() != 0:
+                self.isFuncion = 1
+                self.visitDefinicion(ctx.getChild(2))
+                self.f.write('pop ' + ctx.getChild(1).getText() + '\n')
 
-        elif ctx.getChild(2).getChildCount() != 0:
-            self.visitDefinicion(ctx.getChild(2))
-            self.f.write(ctx.getChild(1).getText() +
-                         " = " + self._temporales.pop() + '\n')
+            else:
+                self.visitDefinicion(ctx.getChild(2))
+                self.f.write(ctx.getChild(1).getText() +
+                             " = " + self._temporales.pop() + '\n')
 
         # verificacion de lista de variables declaradas
         if ctx.getChild(3).getChildCount() != 0:
@@ -322,6 +324,8 @@ class MyVisitor(compiladoresVisitor):
             self.f.write('pop ' + etiquetas[1] + '\n')
             self.visitBloque(ctx.getChild(5))
             self.f.write('jmp ' + etiquetas[1] + '\n')
+
+            self.inFuncion = 0
         else:
             self.visitBloque(ctx.getChild(5))
 
