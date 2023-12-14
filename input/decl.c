@@ -16,7 +16,7 @@ int main()
 
     int e = d + entero + c;
 
-    double resultado = sumarElementos(c + d + e, entero);
+    double resultado = sumarElementos(c + d + e, 3.14 * 5 + 200 - 12 % 6 + 4 / 8);
 
     return 0;
 }
