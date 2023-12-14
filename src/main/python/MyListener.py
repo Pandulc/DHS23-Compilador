@@ -3,7 +3,6 @@ from compiladoresParser import compiladoresParser
 from Estructuras.TablaSimbolos import TS
 from Estructuras.Id import *
 import copy
-import sys
 
 
 class MyListener(compiladoresListener):
@@ -13,6 +12,7 @@ class MyListener(compiladoresListener):
     listTdato = []
     listArgs = []
     isFuncion = 0
+    error = 0
 
     def enterPrograma(self, ctx: compiladoresParser.ProgramaContext):
         print("Comenzando la compilacion".center(40, "*") + '\n')
@@ -179,6 +179,7 @@ class MyListener(compiladoresListener):
             print('LA VARIABLE NO ESTA DEFINIDA, NO SE REALIZO LA ASIGNACION')
             self.errores.write('ERROR: La variable: ' +
                                ctx.getChild(0).getText() + ' no esta definida \n')
+            self.error = 1
             return
 
         for var in contexto.getSimbolos().values():
@@ -222,6 +223,7 @@ class MyListener(compiladoresListener):
             print('FUNCION INEXISTENTE')
             self.errores.write(
                 'ERROR: el simbolo ' + ctx.getChild(0).getText() + ' no ha sido definido \n')
+            self.error = 1
             return
 
         funcionVar = Funcion('', '', [])
@@ -236,6 +238,7 @@ class MyListener(compiladoresListener):
             print('Faltan parametros en la llamada de funcion')
             self.errores.write('ERROR: ' + funcionVar.nombre + ' espera ' + str(
                 len(funcionVar.args)) + ' parametros, recibio ' + str(len(self.listArgs)) + '\n')
+            self.error = 1
             return
 
         for var1, var2 in zip(funcionVar.args, self.listArgs):
@@ -294,12 +297,14 @@ class MyListener(compiladoresListener):
                                         'LA IMPLEMENTACION DE ' + funcionVar.nombre + ' NO SE CORRESPONDE CON EL PROTOTIPO')
                                     self.errores.write('ERROR: ' +
                                                        funcionVar.nombre + ' no se corresponde con su prototipo\n')
+                                    self.error = 1
                                     return
                             else:
                                 print(
                                     'LA IMPLEMENTACION DE ' + funcionVar.nombre + ' NO SE CORRESPONDE CON EL PROTOTIPO')
                                 self.errores.write('ERROR: ' +
                                                    funcionVar.nombre + ' no se corresponde con su prototipo\n')
+                                self.error = 1
                                 return
                     print('La implementacion de ' + funcionVar.nombre +
                           ' se corresponde con su prototipo')
@@ -309,6 +314,7 @@ class MyListener(compiladoresListener):
             'LA IMPLEMENTACION DE ' + funcionVar.nombre + ' NO SE CORRESPONDE CON EL PROTOTIPO')
         self.errores.write('ERROR: ' +
                            funcionVar.nombre + ' no se corresponde con su prototipo\n')
+        self.error = 1
         return
 
     def exitRetornar(self, ctx: compiladoresParser.RetornarContext):
@@ -333,6 +339,7 @@ class MyListener(compiladoresListener):
                 print('SIMBOLO ' + nombre + ' NO DEFINIDO')
                 self.errores.write('ERROR: La variable: ' +
                                    nombre + ' no esta definida\n')
+                self.error = 1
                 return
 
             for var in contexto.getSimbolos().values():
@@ -355,6 +362,7 @@ class MyListener(compiladoresListener):
                   funcionCtx.getChild(1).getText() + ' no es correcto')
             self.errores.write('ERROR: El dato retornado por: ' +
                                funcionCtx.getChild(1).getText() + ' no es correcto\n')
+            self.error = 1
 
     def exitArgs(self, ctx: compiladoresParser.ArgsContext):
         self.listArgs.clear()
@@ -395,6 +403,7 @@ class MyListener(compiladoresListener):
                 print('PARAMETRO ' + nombre + ' NO DEFINIDO')
                 self.errores.write('ERROR: La variable: ' +
                                    nombre + ' no esta definida\n')
+                self.error = 1
                 return
 
             for var in contexto.getSimbolos().values():
@@ -433,6 +442,7 @@ class MyListener(compiladoresListener):
                 print('PARAMETRO ' + nombre + ' NO DEFINIDO')
                 self.errores.write('ERROR: La variable: ' +
                                    nombre + ' no esta definida\n')
+                self.error = 1
                 return
 
             for var in contexto.getSimbolos().values():
@@ -471,6 +481,7 @@ class MyListener(compiladoresListener):
                     print('EL SIMBOLO: ' + nombre + ' NO ESTA DEFINIDO')
                     self.errores.write('ERROR: La variable: ' +
                                        nombre + ' no esta definida\n')
+                    self.error = 1
                     return
 
                 for var in contexto.getSimbolos().values():
@@ -488,6 +499,7 @@ class MyListener(compiladoresListener):
                     print('EL SIMBOLO: ' + nombre + ' NO ESTA DEFINIDO')
                     self.errores.write('ERROR: La variable: ' +
                                        nombre + ' no esta definida\n')
+                    self.error = 1
                     return
 
                 for var in contexto.getSimbolos().values():

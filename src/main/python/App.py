@@ -18,10 +18,15 @@ def main(argv):
     listener = MyListener()
     parser.addParseListener(listener)
     tree = parser.programa()
-    visitor = MyVisitor()
-    visitor.visit(tree)
-    optimizador = Optimizador()
-    optimizador.optimizarCodigoIntermedio()
+    # En caso de haber existido un error, la ejecucion se detendra y no
+    # se construira codigo intermedio
+    if listener.error == 0:
+        visitor = MyVisitor()
+        visitor.visit(tree)
+        optimizador = Optimizador()
+        optimizador.optimizarCodigoIntermedio()
+    else:
+        print('Ha ocurrido un error, revisar el archivo ./output/Errores&Warnings.txt. No se genero codigo intermedio')
 
 
 if __name__ == '__main__':
