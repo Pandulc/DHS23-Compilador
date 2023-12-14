@@ -1,0 +1,18 @@
+TABLA DE SIMBOLOS 
+	Contexto de la funcion: sumarElementos
+		int	a	no inicializada	accedida
+		double	b	no inicializada	accedida
+		double	result	inicializada	accedida
+	Contexto de la funcion: main
+		int	d	no inicializada	accedida
+		int	c	no inicializada	accedida
+		int	entero	inicializada	accedida
+		int	e	inicializada	accedida
+		double	resultado	no inicializada	no accedida
+	Contexto global
+		double	sumarElementos	no inicializada	accedida
+		Argumentos de la funcion: 
+			int	a	no inicializada	no accedida
+			double	b	no inicializada	no accedida
+		int	main	no inicializada	accedida
+		Argumentos de la funcion: 

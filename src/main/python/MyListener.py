@@ -3,9 +3,12 @@ from compiladoresParser import compiladoresParser
 from Estructuras.TablaSimbolos import TS
 from Estructuras.Id import *
 import copy
+import sys
 
 
 class MyListener(compiladoresListener):
+    archivo = open('./output/TablaSimbolos.txt', 'w')
+    errores = open('./output/Errores&Warnings.txt', 'w')
     tablaSimbolos = TS()
     listTdato = []
     listArgs = []
@@ -13,8 +16,53 @@ class MyListener(compiladoresListener):
 
     def enterPrograma(self, ctx: compiladoresParser.ProgramaContext):
         print("Comenzando la compilacion".center(40, "*") + '\n')
+        self.archivo.write('TABLA DE SIMBOLOS \n')
 
     def exitPrograma(self, ctx: compiladoresParser.ProgramaContext):
+
+        contextos = self.tablaSimbolos.getContextos()
+        # Contexto global
+        self.archivo.write('\tContexto global\n')
+
+        for var in contextos[-1].getSimbolos().values():
+            if var.__class__ == Variable:
+                self.archivo.write('\t\t' + var.tdato +
+                                   '\t' + var.nombre + '\t')
+                if var.inicializado:
+                    self.archivo.write('inicializada\t')
+                else:
+                    self.archivo.write('no inicializada\t')
+                if var.accedido:
+                    self.archivo.write('accedida\n')
+                else:
+                    self.archivo.write('no accedida\n')
+            else:
+                self.archivo.write('\t\t' + var.tdato + '\t' +
+                                   var.nombre + '\t')
+
+                if var.inicializado:
+                    self.archivo.write('inicializada\t')
+                else:
+                    self.archivo.write('no inicializada\t')
+                if var.accedido:
+                    self.archivo.write('accedida\n')
+                else:
+                    self.archivo.write('no accedida\n')
+
+                self.archivo.write('\t\tArgumentos de la funcion: \n')
+
+                for arg in var.args:
+                    self.archivo.write('\t\t\t' + arg.tdato +
+                                       '\t' + arg.nombre + '\t')
+                    if arg.inicializado:
+                        self.archivo.write('inicializada\t')
+                    else:
+                        self.archivo.write('no inicializada\t')
+                    if arg.accedido:
+                        self.archivo.write('accedida\n')
+                    else:
+                        self.archivo.write('no accedida\n')
+
         print('\n' + "Fin de la compilacion".center(40, "*"))
         self.tablaSimbolos.borrarContexto()
 
@@ -35,6 +83,25 @@ class MyListener(compiladoresListener):
             self.tablaSimbolos.agregar(var)
 
     def exitBloque(self, ctx: compiladoresParser.BloqueContext):
+        contextos = self.tablaSimbolos.getContextos()
+
+        if ctx.parentCtx != None:
+            self.archivo.write('\tContexto de la funcion: ' +
+                               ctx.parentCtx.getChild(1).getText() + '\n')
+
+            for var in contextos[-1].getSimbolos().values():
+
+                self.archivo.write('\t\t' + var.tdato +
+                                   '\t' + var.nombre + '\t')
+                if var.inicializado:
+                    self.archivo.write('inicializada\t')
+                else:
+                    self.archivo.write('no inicializada\t')
+                if var.accedido:
+                    self.archivo.write('accedida\n')
+                else:
+                    self.archivo.write('no accedida\n')
+
         self.tablaSimbolos.borrarContexto()
 
     def exitDeclaracion(self, ctx: compiladoresParser.DeclaracionContext):
@@ -46,23 +113,27 @@ class MyListener(compiladoresListener):
             nuevaVar = Variable(name, tdato)
 
             # Verificamos llamado a funcion
-            if not ctx.getChild(2).getChild(1).getChild(0).getChild(0).getChild(0).getChild(0).getChild(0).getChild(0).getChild(0).getChild(0).getChildCount() == 4:
-                # Si el 3er hijo en la declaracion es distinto de vacio, existe definicion
-                if (str(ctx.getChild(2).getText()) != ''):
-                    nuevaVar.setInicializado()
-            else:
-                self.tablaSimbolos.agregar(nuevaVar)
-                print('Nuevo simbolo: ' + nuevaVar.nombre + ' agregado')
-                self.listTdato.append(nuevaVar.nombre)
-                self.listTdato.append(nuevaVar.tdato)
-                self.isFuncion = 1
-                self.exitCall_funcion(ctx.getChild(2).getChild(1).getChild(0).getChild(
-                    0).getChild(0).getChild(0).getChild(0).getChild(0).getChild(0).getChild(0))
-                return
+            if ctx.getChild(2).getChildCount() != 0:
+                if not ctx.getChild(2).getChild(1).getChild(0).getChild(0).getChild(0).getChild(0).getChild(0).getChild(0).getChild(0).getChild(0).getChildCount() == 4:
+                    # Si el 3er hijo en la declaracion es distinto de vacio, existe definicion
+                    if (str(ctx.getChild(2).getText()) != ''):
+                        nuevaVar.setInicializado()
+                else:
+                    self.tablaSimbolos.agregar(nuevaVar)
+                    print('Nuevo simbolo: ' + nuevaVar.nombre + ' agregado')
+                    self.listTdato.append(nuevaVar.nombre)
+                    self.listTdato.append(nuevaVar.tdato)
+                    self.isFuncion = 1
+                    self.exitCall_funcion(ctx.getChild(2).getChild(1).getChild(0).getChild(
+                        0).getChild(0).getChild(0).getChild(0).getChild(0).getChild(0).getChild(0))
+                    return
         else:
             print("Variable " + ctx.getChild(1).getText() +
                   " existente en el contexto")
+            self.errores.write(
+                'WARNING: la variable ' + ctx.getChild(1).getText() + ' ya fue definida previamente')
             return
+
         self.tablaSimbolos.agregar(nuevaVar)
         print('Nuevo simbolo: ' + nuevaVar.nombre + ' agregado')
 
@@ -92,6 +163,8 @@ class MyListener(compiladoresListener):
             else:
                 print("Variable " + ctx.getChild(1).getText() +
                       " existente en el contexto")
+                self.errores.write(
+                    'WARNING: la variable ' + ctx.getChild(1).getText() + ' ya fue definida previamente')
                 return
             self.tablaSimbolos.agregar(nuevaVar)
             print('Nuevo simbolo: ' + nuevaVar.nombre + ' agregado')
@@ -102,20 +175,17 @@ class MyListener(compiladoresListener):
 
     def exitAsignacion(self, ctx: compiladoresParser.AsignacionContext):
         contexto = self.tablaSimbolos.buscar(ctx.getChild(0).getText())
-        if contexto == None:
+        if contexto == False:
             print('LA VARIABLE NO ESTA DEFINIDA, NO SE REALIZO LA ASIGNACION')
+            self.errores.write('ERROR: La variable: ' +
+                               ctx.getChild(0).getText() + ' no esta definida \n')
             return
 
         for var in contexto.getSimbolos().values():
             if var.nombre == ctx.getChild(0).getText():
                 # Verifico que no sea llamado a funcion
-                if not ctx.getChild(2).getChild(0).getChild(0).getChild(0).getChild(0).getChild(0).getChild(0).getChild(0).getChild(0).getChildCount() == 4:
-                    varActualizada = Variable(
-                        var.nombre, var.tdato, True)
-                    self.tablaSimbolos.actualizar(varActualizada)
-                    print('Variable ' + varActualizada.nombre + ' actualizada')
                 # En caso de ser llamado a funcion, se actualiza cuando se comprueba que los tipos de datos son iguales (variable y retorno)
-                else:
+                if ctx.getChild(2).getChild(0).getChild(0).getChild(0).getChild(0).getChild(0).getChild(0).getChild(0).getChild(0).getChildCount() == 4:
                     self.listTdato.append(var.nombre)
                     self.listTdato.append(var.tdato)
                     self.isFuncion = 1
@@ -139,17 +209,19 @@ class MyListener(compiladoresListener):
             if var.tdato == tdato:
                 print('La asignacion de: ' + nombre
                       + ' es posible')
-                varActualizada = Variable(nombre, tdato, True)
-                self.tablaSimbolos.actualizar(varActualizada)
             else:
                 print('La asignacion de: ' +
                       nombre + ' no es posible: Error de tipo de dato')
+                self.errores.write('WARNING: los tipos de dato no coinciden, ' +
+                                   nombre + ' espera ' + tdato + ', recibe ' + var.tdato + '\n')
 
             self.isFuncion = 0
             return
 
         if contexto == False:
             print('FUNCION INEXISTENTE')
+            self.errores.write(
+                'ERROR: el simbolo ' + ctx.getChild(0).getText() + ' no ha sido definido \n')
             return
 
         funcionVar = Funcion('', '', [])
@@ -162,17 +234,21 @@ class MyListener(compiladoresListener):
 
         if len(funcionVar.args) != len(self.listArgs):
             print('Faltan parametros en la llamada de funcion')
+            self.errores.write('ERROR: ' + funcionVar.nombre + ' espera ' + str(
+                len(funcionVar.args)) + ' parametros, recibio ' + str(len(self.listArgs)) + '\n')
             return
 
         for var1, var2 in zip(funcionVar.args, self.listArgs):
 
             if var1.tdato != var2.tdato:
-                print('Error: el parametro ' + var2 +
+                print('Error: el parametro ' + var2.nombre +
                       ' no es del tipo esperado')
+                self.errores.write('WARNING: el parametro ' + var2.nombre
+                                   + ' no es del tipo esperado \n')
                 return
 
     def exitProto_funcion(self, ctx: compiladoresParser.Proto_funcionContext):
-        self.listArgs.clear()
+
         if self.tablaSimbolos.buscar(ctx.getChild(1).getText()) == False:
             tdato = ctx.getChild(0).getText()
             nombre = ctx.getChild(1).getText()
@@ -183,9 +259,10 @@ class MyListener(compiladoresListener):
             print('Nuevo simbolo: ' + nuevaVar.nombre + ' agregado')
         else:
             print('SIMBOLO YA DEFINIDO')
+            self.errores.write('WARNING: ' + ctx.getChild(1).getText()
+                               + ' ya ha sido definido\n')
 
     def exitFuncion(self, ctx: compiladoresParser.FuncionContext):
-        self.listArgs.clear()
 
         tdato = ctx.getChild(0).getText()
         nombre = ctx.getChild(1).getText()
@@ -215,10 +292,14 @@ class MyListener(compiladoresListener):
                                 else:
                                     print(
                                         'LA IMPLEMENTACION DE ' + funcionVar.nombre + ' NO SE CORRESPONDE CON EL PROTOTIPO')
+                                    self.errores.write('ERROR: ' +
+                                                       funcionVar.nombre + ' no se corresponde con su prototipo\n')
                                     return
                             else:
                                 print(
                                     'LA IMPLEMENTACION DE ' + funcionVar.nombre + ' NO SE CORRESPONDE CON EL PROTOTIPO')
+                                self.errores.write('ERROR: ' +
+                                                   funcionVar.nombre + ' no se corresponde con su prototipo\n')
                                 return
                     print('La implementacion de ' + funcionVar.nombre +
                           ' se corresponde con su prototipo')
@@ -226,6 +307,8 @@ class MyListener(compiladoresListener):
 
         print(
             'LA IMPLEMENTACION DE ' + funcionVar.nombre + ' NO SE CORRESPONDE CON EL PROTOTIPO')
+        self.errores.write('ERROR: ' +
+                           funcionVar.nombre + ' no se corresponde con su prototipo\n')
         return
 
     def exitRetornar(self, ctx: compiladoresParser.RetornarContext):
@@ -248,10 +331,14 @@ class MyListener(compiladoresListener):
 
             if contexto == False:
                 print('SIMBOLO ' + nombre + ' NO DEFINIDO')
+                self.errores.write('ERROR: La variable: ' +
+                                   nombre + ' no esta definida\n')
                 return
 
             for var in contexto.getSimbolos().values():
                 if var.nombre == nombre:
+                    var.setAccedido()
+                    self.tablaSimbolos.actualizar(var)
                     break
         else:
             if '.' in nombre:
@@ -266,8 +353,12 @@ class MyListener(compiladoresListener):
         else:
             print('El tipo de dato retornado por ' +
                   funcionCtx.getChild(1).getText() + ' no es correcto')
+            self.errores.write('ERROR: El dato retornado por: ' +
+                               funcionCtx.getChild(1).getText() + ' no es correcto\n')
 
     def exitArgs(self, ctx: compiladoresParser.ArgsContext):
+        self.listArgs.clear()
+
         if ctx.getChildCount() != 0:
             nombre = ctx.getChild(1).getText()
             tdato = ctx.getChild(0).getText()
@@ -302,6 +393,8 @@ class MyListener(compiladoresListener):
 
             if contexto == False:
                 print('PARAMETRO ' + nombre + ' NO DEFINIDO')
+                self.errores.write('ERROR: La variable: ' +
+                                   nombre + ' no esta definida\n')
                 return
 
             for var in contexto.getSimbolos().values():
@@ -324,7 +417,7 @@ class MyListener(compiladoresListener):
             return
 
         nombre = str()
-        if ctx.getChild(1).getChild(0).getChild(0).getChildCount == 2:
+        if ctx.getChild(1).getChild(0).getChild(0).getChildCount() == 2:
             nombre = ctx.getChild(1).getChild(
                 0).getChild(0).getChild(1).getText()
         elif ctx.getChild(1).getChild(0).getChild(0).getChild(0).getChildCount() == 0:
@@ -338,6 +431,8 @@ class MyListener(compiladoresListener):
 
             if contexto == False:
                 print('PARAMETRO ' + nombre + ' NO DEFINIDO')
+                self.errores.write('ERROR: La variable: ' +
+                                   nombre + ' no esta definida\n')
                 return
 
             for var in contexto.getSimbolos().values():
@@ -358,3 +453,45 @@ class MyListener(compiladoresListener):
             self.exitLista_send_args(ctx.getChild(1))
 
         return
+
+    def exitFactor(self, ctx: compiladoresParser.FactorContext):
+
+        if ctx.getChild(0).getChildCount() != 0:
+            return
+
+        if ctx.getChildCount() == 3:
+            return
+
+        if ctx.getChildCount() == 2:
+            nombre = ctx.getChild(1).getText()
+            if not nombre.replace('.', '', 1).isdigit():
+                contexto = self.tablaSimbolos.buscar(nombre)
+
+                if contexto == False:
+                    print('EL SIMBOLO: ' + nombre + ' NO ESTA DEFINIDO')
+                    self.errores.write('ERROR: La variable: ' +
+                                       nombre + ' no esta definida\n')
+                    return
+
+                for var in contexto.getSimbolos().values():
+                    if var.nombre == nombre:
+                        var.setAccedido()
+                        self.tablaSimbolos.actualizar(var)
+                        break
+
+        if ctx.getChildCount() == 1:
+            nombre = ctx.getChild(0).getText()
+            if not nombre.replace('.', '', 1).isdigit():
+                contexto = self.tablaSimbolos.buscar(nombre)
+
+                if contexto == False:
+                    print('EL SIMBOLO: ' + nombre + ' NO ESTA DEFINIDO')
+                    self.errores.write('ERROR: La variable: ' +
+                                       nombre + ' no esta definida\n')
+                    return
+
+                for var in contexto.getSimbolos().values():
+                    if var.nombre == nombre:
+                        var.setAccedido()
+                        self.tablaSimbolos.actualizar(var)
+                        break

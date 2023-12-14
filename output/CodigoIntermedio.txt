@@ -12,9 +12,23 @@ jmp l1
 t4 = 5
 entero = t4
 t5 = entero
-push t5
-t6 = 3.14
-push t6
+c = t5
+t6 = c
+d = t6
+t7 = d
+t9 = entero
+t11 = c
+t10 = t9 + t11
+t8 = t7 + t10
+e = t8
+t12 = c
+t14 = d
+t16 = e
+t15 = t14 + t16
+t13 = t12 + t15
+push t13
+t17 = entero
+push t17
 push l1
 jmp l0
 label l1

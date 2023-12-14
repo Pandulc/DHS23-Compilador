@@ -1,0 +1,15 @@
+label l0
+pop a
+pop b
+pop l1
+result = a + b
+push result
+jmp l1
+entero = 5
+e = entero + entero + entero
+push entero + entero + e
+push entero
+push l1
+jmp l0
+label l1
+pop resultado

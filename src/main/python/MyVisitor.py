@@ -14,13 +14,13 @@ class MyVisitor(compiladoresVisitor):
     inFuncion = 0
 
     def visitPrograma(self, ctx: compiladoresParser.ProgramaContext):
-        print("Visitando arbol")
+        print("Generando codigo intermedio".center(40, "*"))
         self.f = open("./output/CodigoIntermedio.txt", "w")
 
         self.visitInstrucciones(ctx.getChild(0))
 
         self.f.close()
-        print("Codigo intermedio generado")
+        print("Codigo intermedio generado".center(40, "*"))
 
     def visitInstrucciones(self, ctx: compiladoresParser.InstruccionContext):
         self.visitInstruccion(ctx.getChild(0))
@@ -240,6 +240,7 @@ class MyVisitor(compiladoresVisitor):
                 self.f.write(temporal + " = " + self._temporales.pop() + " " +
                              ctx.getChild(1).getChild(0).getText() + " " + self.visitExp(ctx.getChild(1)) + "\n")
                 self._temporales.append(temporal)
+
             self.f.write('push ' + self._temporales.pop() + '\n')
             return
 
