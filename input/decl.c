@@ -16,6 +16,12 @@ int main()
 
     int e = d + entero + c;
 
+    if (entero <= 5)
+    {
+        int f = e + 5;
+        e = e + f;
+    }
+
     double resultado = sumarElementos(c + d + e, 3.14 * 5 + 200 - 12 % 6 + 4 / 8);
 
     return 0;

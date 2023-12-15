@@ -86,8 +86,25 @@ class MyListener(compiladoresListener):
         contextos = self.tablaSimbolos.getContextos()
 
         if ctx.parentCtx != None:
-            self.archivo.write('\tContexto de la funcion: ' +
-                               ctx.parentCtx.getChild(1).getText() + '\n')
+            if ctx.parentCtx.getChild(0).getText() == 'int':
+                self.archivo.write('\tContexto de la funcion: ' +
+                                   ctx.parentCtx.getChild(1).getText() + '\n')
+
+            if ctx.parentCtx.getChild(0).getText() == 'double':
+                self.archivo.write('\tContexto de la funcion: ' +
+                                   ctx.parentCtx.getChild(1).getText() + '\n')
+
+            if ctx.parentCtx.getChild(0).getText() == 'if':
+                self.archivo.write('\tContexto del bloque if: \n')
+
+            if ctx.parentCtx.getChild(0).getText() == 'else':
+                self.archivo.write('\tContexto del bloque else: \n')
+
+            if ctx.parentCtx.getChild(0).getText() == 'for':
+                self.archivo.write('\tContexto del bloque for: \n')
+
+            if ctx.parentCtx.getChild(0).getText() == 'while':
+                self.archivo.write('\tContexto del bloque while: \n')
 
             for var in contextos[-1].getSimbolos().values():
 

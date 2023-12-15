@@ -12,6 +12,7 @@ class Optimizador:
         print('Comenzando optimizacion'.center(40, '*'))
         self.separarVariables()
         self.reemplazar()
+        print('Optimizacion completada'.center(40, '*'))
 
     def separarVariables(self):
         self.src.seek(0)
